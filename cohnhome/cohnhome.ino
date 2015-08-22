@@ -14,6 +14,8 @@ int tweetCounter = 0;
 int maxTweets = 2;
 
 const char sender[] PROGMEM = "https://spreadsheets.google.com/feeds/cells/1XJpDbeshpUnjyYekKR5MkiXk62Qi8-vhrGZboEjht40/omtx7hz/private/full/R3C2?access_token=ya29.ywHuvz4MqrLY1mzl40zFeGeM_KBdEN2Ov99RbBcxaIIqrQCkylD1y1VFP39rFoFQBV2O";
+const char csv[] PROGMEM = "https://docs.google.com/spreadsheets/d/1XJpDbeshpUnjyYekKR5MkiXk62Qi8-vhrGZboEjht40/pub?output=csv&id=1XJpDbeshpUnjyYekKR5MkiXk62Qi8-vhrGZboEjht40";
+
 
 void setup() {
 	Serial.begin(9600);
@@ -74,7 +76,7 @@ void setup() {
 
 
 void checkHome(){
-	static bool lastCheck = false;
+	static bool lastCheck = getHomeStatus("anyoneHome");
 	if(getHomeStatus("anyoneHome")) {
 		Serial.println("Someone's Home!");
 		digitalWrite(ledPin, HIGH);
@@ -86,7 +88,7 @@ void checkHome(){
 	if (getHomeStatus("anyoneHome") != lastCheck){
 		//send a tweet
 		if(tweetCounter < maxTweets){
-			sendDirectMessage("shred444", "Home Alone!");
+			sendDirectMessage("shred444", ("Home Alone! Run="));
 			tweetCounter++;
 		}else{
 			Serial.println("Too Many Tweets");
@@ -95,12 +97,15 @@ void checkHome(){
 
 	lastCheck = getHomeStatus("anyoneHome");
 
+	runCounter++;
+
 }
 String runCurl(){
 
 	String buffer = "";
 	Process p;
 	p.begin("curl");
+	Serial.println(String(csv));
 	p.addParameter("https://docs.google.com/spreadsheets/d/1XJpDbeshpUnjyYekKR5MkiXk62Qi8-vhrGZboEjht40/pub?output=csv&id=1XJpDbeshpUnjyYekKR5MkiXk62Qi8-vhrGZboEjht40");
 	p.addParameter("-k");
 	p.run();
@@ -130,7 +135,7 @@ bool getHomeStatus(String key) {
     	//Serial.println("Found key at " + String(keypos) + " " + String(firstcomma) + " " + String(endOfLine));
     	result = homeStatus.substring(firstcomma+1,endOfLine);
     	result.trim();
-    	//Serial.println("Value=" + result + ".");
+    	Serial.println("Value=" + result + ".");
     	if (result == "TRUE")
     		return true;
     	else
